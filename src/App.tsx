@@ -110,6 +110,11 @@ function App() {
       </button>
       <br />
       {transactionHash && <p>트랜잭션 해시: {transactionHash}</p>}
+
+      <br />
+      <br />
+      <p>최효현 교수님 지갑 주소: 0x95319d1e6Fff1667CdC4fcDDfedAf852dec78A7b</p>
+      <p>내 지갑 주소: 0x2c879C9Fc9399024E3FD17e5cF6ccd02Bb6f0dD0</p>
     </div>
   );
 }
