@@ -12,29 +12,34 @@ function App() {
 
   // MetaMask와 Web3 연결
   useEffect(() => {
-    if (window.ethereum) {
-      const web3Instance = new Web3(window.ethereum);
-      setWeb3(web3Instance);
+    const connectMetaMask = async () => {
+      if (window.ethereum) {
+        try {
+          // Web3 인스턴스 생성 및 상태 저장
+          const web3Instance = new Web3(window.ethereum);
+          setWeb3(web3Instance);
 
-      // MetaMask 계정 요청
-      window.ethereum
-        .request({ method: "eth_requestAccounts" })
-        .then((accounts: string[]) => {
+          // MetaMask 계정 요청
+          const accounts: string[] = await window.ethereum.request({ method: "eth_requestAccounts" });
           setAccount(accounts[0]);
 
-          // 해당 계정의 잔액 가져오기
-          web3Instance.eth.getBalance(accounts[0]).then((balanceInWei) => {
-            const balanceInEther = web3Instance.utils.fromWei(balanceInWei, "ether"); // Wei를 Ether로 변환
-            setBalance(balanceInEther);
-          });
-        })
-        .catch((error: Error) => {
-          console.error("MetaMask 계정을 가져오는 중 오류 발생:", error);
-        });
-    } else {
-      console.error("MetaMask가 설치되지 않았습니다.");
-      window.open("https://metamask.io/download.html");
-    }
+          // 해당 계정의 잔액 가져오기 및 Wei를 Ether로 변환
+          const balanceInWei = await web3Instance.eth.getBalance(accounts[0]);
+          const balanceInEther = web3Instance.utils.fromWei(balanceInWei, "ether");
+          setBalance(balanceInEther);
+        } catch (error) {
+          // MetaMask 계정 요청 또는 잔액 가져오는 중 오류 처리
+          console.error("MetaMask 계정 또는 잔액을 가져오는 중 오류 발생:", error);
+        }
+      } else {
+        // MetaMask가 설치되어 있지 않을 경우 처리
+        console.error("MetaMask가 설치되지 않았습니다.");
+        window.open("https://metamask.io/download.html");
+      }
+    };
+
+    // 비동기 함수 호출
+    connectMetaMask();
   }, []);
 
   // 이더리움 전송 함수
