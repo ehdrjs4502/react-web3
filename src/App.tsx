@@ -4,6 +4,7 @@ import Web3 from "web3";
 function App() {
   const [web3, setWeb3] = useState<Web3 | null>(null);
   const [account, setAccount] = useState("");
+  const [balance, setBalance] = useState("");
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -20,6 +21,12 @@ function App() {
         .request({ method: "eth_requestAccounts" })
         .then((accounts: string[]) => {
           setAccount(accounts[0]);
+
+          // 해당 계정의 잔액 가져오기
+          web3Instance.eth.getBalance(accounts[0]).then((balanceInWei) => {
+            const balanceInEther = web3Instance.utils.fromWei(balanceInWei, "ether"); // Wei를 Ether로 변환
+            setBalance(balanceInEther);
+          });
         })
         .catch((error: Error) => {
           console.error("MetaMask 계정을 가져오는 중 오류 발생:", error);
@@ -49,6 +56,9 @@ function App() {
 
       const hash = await web3.eth.sendTransaction(transaction);
       setTransactionHash(hash.transactionHash); // 트랜잭션 해시 저장
+      // 트랜잭션 후 잔액 업데이트
+      const newBalance = await web3.eth.getBalance(account);
+      setBalance(web3.utils.fromWei(newBalance, "ether"));
       setIsLoading(false); // 트랜잭션 완료 후 로딩 상태 해제
     } catch (error) {
       console.error("이더리움 전송 중 오류 발생:", error);
@@ -59,7 +69,14 @@ function App() {
   return (
     <div>
       <h1>MetaMask로 이더리움 전송</h1>
-      {account ? <p>연결된 계정: {account}</p> : <p>MetaMask를 연결하세요</p>}
+      {account ? (
+        <>
+          <p>연결된 계정: {account}</p>
+          <p>잔액: {balance.substring(0, 6)} ETH</p> {/* 잔액 표시 */}
+        </>
+      ) : (
+        <p>MetaMask를 연결하세요</p>
+      )}
 
       <div>
         <label>받는 주소: </label>
